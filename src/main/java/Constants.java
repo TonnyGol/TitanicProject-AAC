@@ -3,7 +3,7 @@ public class Constants {
     public static final int WINDOW_WIDTH = 600;
     public static final int WINDOW_HEIGHT = 700;
     public static final String[] PASSENGER_CLASS_OPTIONS = {"All", "1st", "2nd", "3rd"};
-    public static final String[] PASSENGER_GENDER_OPTIONS = {"All", "Male", "Female"};
+    public static final String[] PASSENGER_GENDER_OPTIONS = {"All", "male", "female"};
     public static final String[] PASSENGER_PIER_EMBARK_OPTIONS = {"All", "Cherbourg", "Queenstown", "Southampton"};
     public static final int MARGIN_FROM_TOP = 10;
     public static final int MARGIN_FROM_LEFT = 5;
