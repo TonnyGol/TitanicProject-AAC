@@ -1,8 +1,7 @@
 import javax.swing.*;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 public class ManageScreen extends JPanel {
@@ -172,7 +171,54 @@ public class ManageScreen extends JPanel {
                 //do whatever you want on change
 
             });
+            this.filterButton.addActionListener((e) -> {
+                filterPassengers();
+            });
         }
     }
 
+    public void filterPassengers(){
+        int minIdRange = this.rangeMinTextField.getText().isEmpty() ? 0 : Integer.parseInt(this.rangeMinTextField.getText());
+        int maxIdRange = this.rangeMaxTextField.getText().isEmpty() ? 0 : Integer.parseInt(this.rangeMaxTextField.getText());
+        String name = this.nameTextField.getText();
+        String gender = (String) this.genderComboBox.getSelectedItem();
+        int sibSp = this.sibSpTextField.getText().isEmpty() ? 0 : Integer.parseInt(this.sibSpTextField.getText());
+        int parch = this.parchTextField.getText().isEmpty() ? 0 :Integer.parseInt(this.parchTextField.getText());
+        String ticketString = this.ticketNumberTextField.getText();
+        int minFare = this.ticketMinCostTextField.getText().isEmpty() ? 0 :Integer.parseInt(this.ticketMinCostTextField.getText());
+        int maxFare = this.ticketMaxCostTextField.getText().isEmpty()  ? 0 : Integer.parseInt(this.ticketMaxCostTextField.getText());
+        String cabin = this.cabinNumberTextField.getText();
+        char pier = Objects.requireNonNull(this.pierEmbarkComboBox.getSelectedItem()).toString().charAt(0);
+
+        int survivedPassengers;
+
+        List<Passenger> filteredPassenger =
+                this.passengers
+                        .stream()
+                        .filter(passenger -> {
+                            boolean toFilter = true;
+                            if (!name.isEmpty() && toFilter){
+                                toFilter = passenger.getFormattedName().contains(name);
+                            }
+                            return toFilter;
+                        })
+                        .filter(passenger -> passenger.getPassengerId() >= minIdRange && passenger.getPassengerId() <= maxIdRange)
+                        .filter(passenger -> passenger.getFormattedName().contains(name))
+                        .filter(passenger -> passenger.getSex().equals(gender))
+                        .filter(passenger -> passenger.getSibSp() == (sibSp))
+                        .filter(passenger -> passenger.getParch() == (parch))
+                        .filter(passenger -> passenger.getTicket().equals(ticketString))
+                        .filter(passenger -> passenger.getFare() >= (minFare) && passenger.getFare() <= (maxFare))
+                        .filter(passenger -> passenger.getCabin().equals(cabin))
+                .toList();
+        survivedPassengers = (int) filteredPassenger
+                .stream()
+                .filter(Passenger::isSurvived)
+                .count();
+        if(!filteredPassenger.isEmpty()){
+            System.out.println("Total rows: " + filteredPassenger.size() + " ("+survivedPassengers+" survived,"+(filteredPassenger.size()-survivedPassengers)+" did not)");
+        }else{
+            System.out.println("Empty filtered passengers");
+        }
+    }
 }

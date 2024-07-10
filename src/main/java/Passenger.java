@@ -29,11 +29,54 @@ public class Passenger {
         this.embarked = embarked;
     }
 
-
     public String getFormattedName(){
         String[] formattedNameParts = name.split("\\.");
         String[] lastNameParts = formattedNameParts[0].split(" ");
 
         return formattedNameParts[1] + " " + lastNameParts[0];
+    }
+
+    public int getPclass() {
+        return pclass;
+    }
+
+    public int getPassengerId() {
+        return passengerId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getSex() {
+        return sex;
+    }
+
+    public int getSibSp() {
+        return sibSp;
+    }
+
+    public int getParch() {
+        return parch;
+    }
+
+    public String getTicket() {
+        return ticket;
+    }
+
+    public double getFare() {
+        return fare;
+    }
+
+    public String getCabin() {
+        return cabin;
+    }
+
+    public char getEmbarked() {
+        return embarked;
+    }
+
+    public boolean isSurvived() {
+        return survived;
     }
 }
