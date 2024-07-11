@@ -1,0 +1,20 @@
+Percentage survived by class
+1st class Avg: 62.96%
+2nd class Avg: 47.28%
+3rd class Avg: 24.24%
+--------------------------------
+Percentage survived by gender
+male Avg: 18.89%
+female Avg: 74.20%
+--------------------------------
+Percentage survived by age
+Age (0-10) Avg: 26.32%
+Age (11-20) Avg: 12.87%
+Age (21-30) Avg: 24.56%
+Age (31-40) Avg: 20.18%
+Age (41-50) Avg: 9.65%
+Age 50+ Avg: 7.89%
+--------------------------------
+Percentage survived with family or without
+Has family Avg: 50.56%
+Has no family Avg: 30.35%

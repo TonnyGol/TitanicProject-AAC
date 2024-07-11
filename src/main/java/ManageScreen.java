@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.List;
 
@@ -24,7 +22,7 @@ public class ManageScreen extends JPanel {
     private JButton filterButton;
     private List<Passenger> passengers;
     private final String SAVED_SEARCH_FILE_PATH = "src\\data\\";
-    private final String SAVED_STATISTICS_FILE_PATH = "src\\data\\";
+    private final String SAVED_STATISTICS_FILE_PATH = "src\\data\\Statistics.txt";
     private int fileCount = 1;
 
     public ManageScreen(int x, int y, int width, int height) {
@@ -152,14 +150,46 @@ public class ManageScreen extends JPanel {
             this.statisticResultButton.setBounds(x + Constants.MARGIN_FROM_LEFT + 90, y + Constants.LABEL_HEIGHT * 13, Constants.LABEL_WIDTH * 2, Constants.LABEL_HEIGHT);
             this.statisticResultButton.setFont(new Font("Create Statistics File", Font.ITALIC, 15));
             this.statisticResultButton.setVisible(true);
-            this.statisticResultButton.setFocusable(true);
             this.add(this.statisticResultButton);
 
             readTitanicPassengerData(file);
 
-            this.filterButton.addActionListener((e) -> {
-                filterPassengers();
-            });
+            this.filterButton.addActionListener((e) -> filterPassengers());
+            this.statisticResultButton.addActionListener((e) -> createStatisticsFile());
+        }
+    }
+
+    public void readTitanicPassengerData(File file) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            List<List<String>> records = new ArrayList<>(br.lines()
+                    .map(line -> Arrays.asList(line.split(",")))
+                    .toList());
+
+            records.remove(0); // Line with no data for passenger Object.
+            this.passengers = records
+                    .stream()
+                    .map(line -> {
+                        int passengerId = Integer.parseInt(line.get(0));
+                        boolean survived = line.get(1).equals("1");
+                        int pclass = Integer.parseInt(line.get(2));
+                        String passengerName = line.get(3) + " " + line.get(4);
+                        passengerName = passengerName.substring(1, passengerName.length() - 1);
+                        String sex = line.get(5);
+                        double age = line.get(6).isEmpty() ? 0 : Double.parseDouble(line.get(6));
+                        int sibSp = Integer.parseInt(line.get(7));
+                        int parch = Integer.parseInt(line.get(8));
+                        String ticket = line.get(9);
+                        double fare = Double.parseDouble(line.get(10));
+                        String cabin = line.get(11);
+                        char embarked = line.get(12).charAt(0);
+
+                        return new Passenger(passengerId, survived, pclass, passengerName, sex,
+                                age, sibSp, parch, ticket, fare, cabin, embarked);
+                    })
+                    .toList();
+        } catch (IOException ignored) {
+
         }
     }
 
@@ -221,10 +251,7 @@ public class ManageScreen extends JPanel {
                         .sorted(Comparator.comparing(Passenger::getFormattedName))
                         .toList();
 
-        survivedPassengers = (int) filteredPassenger
-                .stream()
-                .filter(Passenger::isSurvived)
-                .count();
+        survivedPassengers = calculateSurvivedPassengers(filteredPassenger);
 
         writeLogFile(filteredPassenger);
 
@@ -232,12 +259,34 @@ public class ManageScreen extends JPanel {
             String result = "Total Rows: " + filteredPassenger.size() + " (" + survivedPassengers + " survived, " + (filteredPassenger.size() - survivedPassengers) + " did not)";
             this.filterResultLabel.setText(result);
         } else {
-            this.filterResultLabel.setText("No passengers found.a");
+            this.filterResultLabel.setText("No passengers found.");
         }
+    }
+
+    public int calculateSurvivedPassengers(List<Passenger> filteredPassenger) {
+        return (int) filteredPassenger
+                .stream()
+                .filter(Passenger::isSurvived)
+                .count();
+    }
+
+    public int getSurvivedCountInAgeRange(int min, int max, List<Passenger> anyAgeSurvivedPassengers){
+        return (int) anyAgeSurvivedPassengers
+                .stream()
+                .filter(passenger -> passenger.getAge() >= min && passenger.getAge() <= max)
+                .count();
+    }
+
+    public int getSurvivedInTicketRange(int min, int max, List<Passenger> anyAgeSurvivedPassengers){
+        return (int) anyAgeSurvivedPassengers
+                .stream()
+                .filter(passenger -> passenger.getFare() >= min && passenger.getFare() <= max)
+                .count();
     }
 
     public void writeLogFile(List<Passenger> filteredPassenger){
         try {
+            //Data convert back to lines
             List<List<String>> filteredPassengersData = filteredPassenger
                     .stream()
                     .map(passenger -> {
@@ -258,6 +307,7 @@ public class ManageScreen extends JPanel {
                     })
                     .toList();
 
+            //Log file creation
             File savedSearch = new File(SAVED_SEARCH_FILE_PATH + this.fileCount + ".csv");
             fileCount++;
             System.out.println("created log file");
@@ -278,57 +328,135 @@ public class ManageScreen extends JPanel {
         }
     }
 
-    public void statistic(List passengers) {
-        File savedStatistics = new File(SAVED_STATISTICS_FILE_PATH + ".csv");
-        System.out.println("created stats");
-        FileWriter fileWriter2 = null;
-        try {
-            fileWriter2 = new FileWriter(savedStatistics);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        BufferedWriter bufferedWriter = new BufferedWriter(fileWriter2);
-        try {
-            bufferedWriter.write(String.join(",", "gay"));
-            bufferedWriter.newLine();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    public void createStatisticsFile() {
 
-    public void readTitanicPassengerData(File file) {
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
-            List<List<String>> records = new ArrayList<>(br.lines()
-                    .map(line -> Arrays.asList(line.split(",")))
-                    .toList());
+            //Stats calculation
+            List<String> statisticsData = new ArrayList<>();
 
-            records.remove(0); // Line with no data for passenger Object.
-            this.passengers = records
+            statisticsData.add("Percentage survived by class");
+            List<Passenger> firstClass = this.passengers
                     .stream()
-                    .map(line -> {
-                        int passengerId = Integer.parseInt(line.get(0));
-                        boolean survived = line.get(1).equals("1");
-                        int pclass = Integer.parseInt(line.get(2));
-                        String passengerName = line.get(3) + " " + line.get(4);
-                        passengerName = passengerName.substring(1, passengerName.length() - 1);
-                        String sex = line.get(5);
-                        double age = line.get(6).isEmpty() ? 0 : Double.parseDouble(line.get(6));
-                        int sibSp = Integer.parseInt(line.get(7));
-                        int parch = Integer.parseInt(line.get(8));
-                        String ticket = line.get(9);
-                        double fare = Double.parseDouble(line.get(10));
-                        String cabin = line.get(11);
-                        char embarked = line.get(12).charAt(0);
-
-                        return new Passenger(passengerId, survived, pclass, passengerName, sex,
-                                age, sibSp, parch, ticket, fare, cabin, embarked);
-                    })
+                    .filter(passenger -> passenger.getPclass() == 1)
                     .toList();
-        } catch (IOException ignored) {
+            int firstClassSurvived = calculateSurvivedPassengers(firstClass);
+            double firstClassSurvivedAvg = (double) firstClassSurvived /firstClass.size() ;
+            statisticsData.add("1st class Avg: " + String.format("%.2f", firstClassSurvivedAvg*100) +"%");
+
+            List<Passenger> secondClass = this.passengers
+                    .stream()
+                    .filter(passenger -> passenger.getPclass() == 2)
+                    .toList();
+            int secondClassSurvived = calculateSurvivedPassengers(secondClass);
+            double secondClassSurvivedAvg = (double) secondClassSurvived/secondClass.size();
+            statisticsData.add("2nd class Avg: " + String.format("%.2f", secondClassSurvivedAvg*100) +"%");
+
+            List<Passenger> thirdClass = this.passengers
+                    .stream()
+                    .filter(passenger -> passenger.getPclass() == 3)
+                    .toList();
+            int thirdClassSurvived = calculateSurvivedPassengers(thirdClass);
+            double thirdClassSurvivedAvg = (double) thirdClassSurvived/thirdClass.size();
+            statisticsData.add("3rd class Avg: " + String.format("%.2f", thirdClassSurvivedAvg*100) +"%");
+
+            statisticsData.add("--------------------------------");
+
+            statisticsData.add("Percentage survived by gender");
+            List<Passenger> malePassengers = this.passengers
+                    .stream()
+                    .filter(passenger -> passenger.getSex().equals("male"))
+                    .toList();
+            int malePassengersSurvived = calculateSurvivedPassengers(malePassengers);
+            double malePassengersSurvivedAvg = (double) malePassengersSurvived/malePassengers.size();
+            statisticsData.add("male Avg: " + String.format("%.2f", malePassengersSurvivedAvg*100) +"%");
+
+            List<Passenger> femalePassengers = this.passengers
+                    .stream()
+                    .filter(passenger -> passenger.getSex().equals("female"))
+                    .toList();
+            int femalePassengersSurvived = calculateSurvivedPassengers(femalePassengers);
+            double femalePassengersSurvivedAvg = (double) femalePassengersSurvived/femalePassengers.size();
+            statisticsData.add("female Avg: " + String.format("%.2f", femalePassengersSurvivedAvg*100) +"%");
+
+            statisticsData.add("--------------------------------");
+
+            statisticsData.add("Percentage survived by age");
+            List<Passenger> anyAgeSurvivedPassengers = this.passengers
+                    .stream()
+                    .filter(Passenger::isSurvived)
+                    .toList();
+
+            int ageOto10Survived = getSurvivedCountInAgeRange(0, 10, anyAgeSurvivedPassengers);
+            double ageOto10SurvivedAvg = (double) ageOto10Survived / anyAgeSurvivedPassengers.size();
+            statisticsData.add("Age (0-10) Avg: " + String.format("%.2f", ageOto10SurvivedAvg*100) +"%");
+
+            int age11to20Survived = getSurvivedCountInAgeRange(11, 20, anyAgeSurvivedPassengers);
+            double age11to20SurvivedAvg = (double) age11to20Survived / anyAgeSurvivedPassengers.size();
+            statisticsData.add("Age (11-20) Avg: " + String.format("%.2f", age11to20SurvivedAvg*100) +"%");
+
+            int age21to30Survived = getSurvivedCountInAgeRange(21, 30, anyAgeSurvivedPassengers);
+            double age21to30SurvivedAvg = (double) age21to30Survived / anyAgeSurvivedPassengers.size();
+            statisticsData.add("Age (21-30) Avg: " + String.format("%.2f", age21to30SurvivedAvg*100) +"%");
+
+            int age31to40Survived = getSurvivedCountInAgeRange(31, 40, anyAgeSurvivedPassengers);
+            double age31to40SurvivedAvg = (double) age31to40Survived / anyAgeSurvivedPassengers.size();
+            statisticsData.add("Age (31-40) Avg: " + String.format("%.2f", age31to40SurvivedAvg*100) +"%");
+
+            int age41to50Survived = getSurvivedCountInAgeRange(41, 50, anyAgeSurvivedPassengers);
+            double age41to50SurvivedAvg = (double) age41to50Survived / anyAgeSurvivedPassengers.size();
+            statisticsData.add("Age (41-50) Avg: " + String.format("%.2f", age41to50SurvivedAvg*100) +"%");
+
+            int age50PlusSurvived = getSurvivedCountInAgeRange(50, 120, anyAgeSurvivedPassengers);
+            double age50PlusSurvivedAvg = (double) age50PlusSurvived / anyAgeSurvivedPassengers.size();
+            statisticsData.add("Age 50+ Avg: " + String.format("%.2f", age50PlusSurvivedAvg*100) +"%");
+
+            statisticsData.add("--------------------------------");
+
+            statisticsData.add("Percentage survived with family or without");
+            List<Passenger> hasFamilyPassengers = this.passengers
+                    .stream()
+                    .filter(passenger -> passenger.getSibSp() + passenger.getParch() >= 1)
+                    .toList();
+            int hasFamilyPassengersSurvived = calculateSurvivedPassengers(hasFamilyPassengers);
+            double hasFamilyPassengersSurvivedAvg = (double) hasFamilyPassengersSurvived / hasFamilyPassengers.size();
+            statisticsData.add("Has family Avg: " + String.format("%.2f", hasFamilyPassengersSurvivedAvg*100) +"%");
+
+            List<Passenger> hasNoFamilyPassengers = this.passengers
+                    .stream()
+                    .filter(passenger -> passenger.getSibSp() + passenger.getParch() == 0)
+                    .toList();
+            int hasNoFamilyPassengersSurvived = calculateSurvivedPassengers(hasNoFamilyPassengers);
+            double hasNoFamilyPassengersSurvivedAvg = (double) hasNoFamilyPassengersSurvived / hasNoFamilyPassengers.size();
+            statisticsData.add("Has no family Avg: " + String.format("%.2f", hasNoFamilyPassengersSurvivedAvg*100) +"%");
+
+            statisticsData.add("--------------------------------");
+            statisticsData.add("Percentage survived by ticket cost");
+
+
+            int fare0to10Survived = calculateSurvivedPassengers(anyAgeSurvivedPassengers);
+            double fare0to10SurvivedAvg = (double) fare0to10Survived / anyAgeSurvivedPassengers.size();
+            statisticsData.add("Fare 0-10 Avg: " + String.format("%.2f", hasNoFamilyPassengersSurvivedAvg*100) +"%");
+
+
+
+            //Statistics file creation
+            File savedStatistics = new File(SAVED_STATISTICS_FILE_PATH);
+            System.out.println("created statistics file");
+            FileWriter fileWriter = new FileWriter(savedStatistics);
+            BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+            // write to file
+            for (String line : statisticsData) {
+                try {
+                    bufferedWriter.write(line);
+                    bufferedWriter.newLine();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            bufferedWriter.close();
+            fileWriter.close();
+        } catch (IOException e) {
 
         }
     }
-
-
 }
