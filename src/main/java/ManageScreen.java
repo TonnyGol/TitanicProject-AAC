@@ -197,7 +197,7 @@ public class ManageScreen extends JPanel {
         int minIdRange = this.rangeMinTextField.getText().isEmpty() ? -1 : Integer.parseInt(this.rangeMinTextField.getText());
         int maxIdRange = this.rangeMaxTextField.getText().isEmpty() ? -1 : Integer.parseInt(this.rangeMaxTextField.getText());
         String name = this.nameTextField.getText();
-        String gender = (String) this.genderComboBox.getSelectedItem();
+        String gender = Objects.requireNonNull(this.genderComboBox.getSelectedItem()).toString();
         int sibSp = this.sibSpTextField.getText().isEmpty() ? -1 : Integer.parseInt(this.sibSpTextField.getText());
         int parch = this.parchTextField.getText().isEmpty() ? -1 : Integer.parseInt(this.parchTextField.getText());
         String ticketString = this.ticketNumberTextField.getText();
@@ -248,7 +248,7 @@ public class ManageScreen extends JPanel {
                             }
                             return toFilter;
                         })
-                        .sorted(Comparator.comparing(Passenger::getFormattedName))
+                        .sorted()
                         .toList();
 
         survivedPassengers = calculateSurvivedPassengers(filteredPassenger);
@@ -270,17 +270,24 @@ public class ManageScreen extends JPanel {
                 .count();
     }
 
-    public int getSurvivedCountInAgeRange(int min, int max, List<Passenger> anyAgeSurvivedPassengers){
-        return (int) anyAgeSurvivedPassengers
+    public int getSurvivedCountInAgeRange(int min, int max, List<Passenger> allSurvivedPassengers){
+        return (int) allSurvivedPassengers
                 .stream()
                 .filter(passenger -> passenger.getAge() >= min && passenger.getAge() <= max)
                 .count();
     }
 
-    public int getSurvivedInTicketRange(int min, int max, List<Passenger> anyAgeSurvivedPassengers){
-        return (int) anyAgeSurvivedPassengers
+    public int getSurvivedInTicketRange(int min, int max, List<Passenger> allSurvivedPassengers){
+        return (int) allSurvivedPassengers
                 .stream()
                 .filter(passenger -> passenger.getFare() >= min && passenger.getFare() <= max)
+                .count();
+    }
+
+    public int getSurvivedByPier(char pier, List<Passenger> allSurvivedPassengers){
+        return (int) allSurvivedPassengers
+                .stream()
+                .filter(passenger -> passenger.getEmbarked() == pier)
                 .count();
     }
 
@@ -381,33 +388,33 @@ public class ManageScreen extends JPanel {
             statisticsData.add("--------------------------------");
 
             statisticsData.add("Percentage survived by age");
-            List<Passenger> anyAgeSurvivedPassengers = this.passengers
+            List<Passenger> allSurvivedPassengers = this.passengers
                     .stream()
                     .filter(Passenger::isSurvived)
                     .toList();
 
-            int ageOto10Survived = getSurvivedCountInAgeRange(0, 10, anyAgeSurvivedPassengers);
-            double ageOto10SurvivedAvg = (double) ageOto10Survived / anyAgeSurvivedPassengers.size();
+            int ageOto10Survived = getSurvivedCountInAgeRange(0, 10, allSurvivedPassengers);
+            double ageOto10SurvivedAvg = (double) ageOto10Survived / allSurvivedPassengers.size();
             statisticsData.add("Age (0-10) Avg: " + String.format("%.2f", ageOto10SurvivedAvg*100) +"%");
 
-            int age11to20Survived = getSurvivedCountInAgeRange(11, 20, anyAgeSurvivedPassengers);
-            double age11to20SurvivedAvg = (double) age11to20Survived / anyAgeSurvivedPassengers.size();
+            int age11to20Survived = getSurvivedCountInAgeRange(11, 20, allSurvivedPassengers);
+            double age11to20SurvivedAvg = (double) age11to20Survived / allSurvivedPassengers.size();
             statisticsData.add("Age (11-20) Avg: " + String.format("%.2f", age11to20SurvivedAvg*100) +"%");
 
-            int age21to30Survived = getSurvivedCountInAgeRange(21, 30, anyAgeSurvivedPassengers);
-            double age21to30SurvivedAvg = (double) age21to30Survived / anyAgeSurvivedPassengers.size();
+            int age21to30Survived = getSurvivedCountInAgeRange(21, 30, allSurvivedPassengers);
+            double age21to30SurvivedAvg = (double) age21to30Survived / allSurvivedPassengers.size();
             statisticsData.add("Age (21-30) Avg: " + String.format("%.2f", age21to30SurvivedAvg*100) +"%");
 
-            int age31to40Survived = getSurvivedCountInAgeRange(31, 40, anyAgeSurvivedPassengers);
-            double age31to40SurvivedAvg = (double) age31to40Survived / anyAgeSurvivedPassengers.size();
+            int age31to40Survived = getSurvivedCountInAgeRange(31, 40, allSurvivedPassengers);
+            double age31to40SurvivedAvg = (double) age31to40Survived / allSurvivedPassengers.size();
             statisticsData.add("Age (31-40) Avg: " + String.format("%.2f", age31to40SurvivedAvg*100) +"%");
 
-            int age41to50Survived = getSurvivedCountInAgeRange(41, 50, anyAgeSurvivedPassengers);
-            double age41to50SurvivedAvg = (double) age41to50Survived / anyAgeSurvivedPassengers.size();
+            int age41to50Survived = getSurvivedCountInAgeRange(41, 50, allSurvivedPassengers);
+            double age41to50SurvivedAvg = (double) age41to50Survived / allSurvivedPassengers.size();
             statisticsData.add("Age (41-50) Avg: " + String.format("%.2f", age41to50SurvivedAvg*100) +"%");
 
-            int age50PlusSurvived = getSurvivedCountInAgeRange(50, 120, anyAgeSurvivedPassengers);
-            double age50PlusSurvivedAvg = (double) age50PlusSurvived / anyAgeSurvivedPassengers.size();
+            int age50PlusSurvived = getSurvivedCountInAgeRange(51, 120, allSurvivedPassengers);
+            double age50PlusSurvivedAvg = (double) age50PlusSurvived / allSurvivedPassengers.size();
             statisticsData.add("Age 50+ Avg: " + String.format("%.2f", age50PlusSurvivedAvg*100) +"%");
 
             statisticsData.add("--------------------------------");
@@ -430,13 +437,33 @@ public class ManageScreen extends JPanel {
             statisticsData.add("Has no family Avg: " + String.format("%.2f", hasNoFamilyPassengersSurvivedAvg*100) +"%");
 
             statisticsData.add("--------------------------------");
+
             statisticsData.add("Percentage survived by ticket cost");
+            int fare0to10Survived = getSurvivedInTicketRange(0, 10, allSurvivedPassengers);
+            double fare0to10SurvivedAvg = (double) fare0to10Survived / allSurvivedPassengers.size();
+            statisticsData.add("Fare (0-10) Avg: " + String.format("%.2f", fare0to10SurvivedAvg*100) +"%");
 
+            int fare11to30Survived = getSurvivedInTicketRange(11, 30, allSurvivedPassengers);
+            double fare11to30SurvivedAvg = (double) fare11to30Survived / allSurvivedPassengers.size();
+            statisticsData.add("Fare (11-30) Avg: " + String.format("%.2f", fare11to30SurvivedAvg*100) +"%");
 
-            int fare0to10Survived = calculateSurvivedPassengers(anyAgeSurvivedPassengers);
-            double fare0to10SurvivedAvg = (double) fare0to10Survived / anyAgeSurvivedPassengers.size();
-            statisticsData.add("Fare 0-10 Avg: " + String.format("%.2f", hasNoFamilyPassengersSurvivedAvg*100) +"%");
+            int fare30PlusSurvived = getSurvivedInTicketRange(31, 1000000, allSurvivedPassengers);
+            double fare30PlusSurvivedAvg = (double) fare30PlusSurvived / allSurvivedPassengers.size();
+            statisticsData.add("Fare 30+ Avg: " + String.format("%.2f", fare30PlusSurvivedAvg*100) +"%");
 
+            statisticsData.add("--------------------------------");
+            statisticsData.add("Percentage survived by embarked pier");
+            int embarkedCherbourgSurvived = getSurvivedByPier('C', allSurvivedPassengers);
+            double embarkedCherbourgSurvivedAvg = (double) embarkedCherbourgSurvived / allSurvivedPassengers.size();
+            statisticsData.add("Embarked Cherbourg Avg: " + String.format("%.2f", embarkedCherbourgSurvivedAvg*100) +"%");
+
+            int embarkedQueenstownSurvived = getSurvivedByPier('Q', allSurvivedPassengers);
+            double embarkedQueenstownSurvivedAvg = (double) embarkedQueenstownSurvived / allSurvivedPassengers.size();
+            statisticsData.add("Embarked Queenstown Avg: " + String.format("%.2f", embarkedQueenstownSurvivedAvg*100) +"%");
+
+            int embarkedSouthamptonSurvived = getSurvivedByPier('S', allSurvivedPassengers);
+            double embarkedSouthamptonSurvivedAvg = (double) embarkedSouthamptonSurvived / allSurvivedPassengers.size();
+            statisticsData.add("Embarked Southampton Avg: " + String.format("%.2f", embarkedSouthamptonSurvivedAvg*100) +"%");
 
 
             //Statistics file creation
