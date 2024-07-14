@@ -8,23 +8,23 @@ male Avg: 18.89%
 female Avg: 74.20%
 --------------------------------
 Percentage survived by age
-Age (0-10) Avg: 26.32%
-Age (11-20) Avg: 12.87%
-Age (21-30) Avg: 24.56%
-Age (31-40) Avg: 20.18%
-Age (41-50) Avg: 9.65%
-Age 50+ Avg: 6.43%
+Age (0-10) Avg: 37.34%
+Age (11-20) Avg: 38.26%
+Age (21-30) Avg: 36.68%
+Age (31-40) Avg: 45.10%
+Age (41-50) Avg: 39.29%
+Age 50+ Avg: 34.38%
 --------------------------------
 Percentage survived with family or without
 Has family Avg: 50.56%
 Has no family Avg: 30.35%
 --------------------------------
 Percentage survived by ticket cost
-Fare (0-10) Avg: 19.59%
-Fare (11-30) Avg: 38.01%
-Fare 30+ Avg: 38.30%
+Fare (0-10) Avg: 19.94%
+Fare (11-30) Avg: 44.37%
+Fare 30+ Avg: 54.58%
 --------------------------------
 Percentage survived by embarked pier
-Embarked Cherbourg Avg: 27.19%
-Embarked Queenstown Avg: 8.77%
-Embarked Southampton Avg: 64.04%
+Embarked Cherbourg Avg: 55.36%
+Embarked Queenstown Avg: 38.96%
+Embarked Southampton Avg: 33.90%
