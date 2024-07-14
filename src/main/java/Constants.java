@@ -5,6 +5,7 @@ public class Constants {
     public static final String[] PASSENGER_CLASS_OPTIONS = {"All", "1st", "2nd", "3rd"};
     public static final String[] PASSENGER_GENDER_OPTIONS = {"All", "male", "female"};
     public static final String[] PASSENGER_PIER_EMBARK_OPTIONS = {"All", "Cherbourg", "Queenstown", "Southampton"};
+    public static final String[] SORTED_STATISTICS_OPTIONS = {"None", "Class", "Gender", "Age", "HasFamily", "Ticket Cost", "Pier Embarked"};
     public static final int MARGIN_FROM_TOP = 10;
     public static final int MARGIN_FROM_LEFT = 5;
     public static final int LABEL_WIDTH = 120;
