@@ -176,7 +176,7 @@ public class ManageScreen extends JPanel {
 
 
             this.groupStatistics = new JTextArea();
-            this.groupStatistics.setBounds(x + Constants.MARGIN_FROM_LEFT + 400, y + Constants.LABEL_HEIGHT * 15, Constants.COMBO_BOX_WIDTH * 5, Constants.COMBO_BOX_HEIGHT * 6);
+            this.groupStatistics.setBounds(x + Constants.MARGIN_FROM_LEFT + 350, y + Constants.LABEL_HEIGHT * 15, Constants.COMBO_BOX_WIDTH * 5, Constants.COMBO_BOX_HEIGHT * 6);
             this.groupStatistics.setBackground(this.getBackground());
             this.groupStatistics.setFont(new Font("", Font.ITALIC, 17));
             this.groupStatistics.setVisible(true);
@@ -675,7 +675,11 @@ public class ManageScreen extends JPanel {
                 showGroupStatistic(this.ticketCostStatistics, "Group by Ticket Cost");
             }
             case "Pier Embarked" -> {
-                showGroupStatistic(this.pierEmbarkStatistics, "Group by Pier Embarked");            }
+                showGroupStatistic(this.pierEmbarkStatistics, "Group by Pier Embarked");
+            }
+            case "None" -> {
+                this.groupStatistics.setText(null);
+            }
         }
 
     }
