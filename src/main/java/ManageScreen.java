@@ -3,6 +3,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.*;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ManageScreen extends JPanel {
     private JComboBox<String> classComboBox;
@@ -19,15 +20,9 @@ public class ManageScreen extends JPanel {
     private JTextField ticketMinCostTextField;
     private JTextField ticketMaxCostTextField;
     private JTextField cabinNumberTextField;
+    private JTextArea groupStatistics;
 
     private JLabel filterResultLabel;
-    private JLabel classStatisticsLabel;
-    private JLabel statisticsLabel1;
-    private JLabel statisticsLabel2;
-    private JLabel statisticsLabel3;
-    private JLabel statisticsLabel4;
-    private JLabel statisticsLabel5;
-    private JLabel statisticsLabel6;
 
     private JButton statisticResultButton;
     private JButton filterButton;
@@ -40,8 +35,7 @@ public class ManageScreen extends JPanel {
     private Map<String, Float> pierEmbarkStatistics;
 
     private List<Passenger> passengers;
-    private final String SAVED_SEARCH_FILE_PATH = "src\\data\\";
-    private final String SAVED_STATISTICS_FILE_PATH = "src\\data\\Statistics.txt";
+
     private int fileCount = 1;
 
 
@@ -162,15 +156,10 @@ public class ManageScreen extends JPanel {
 
             this.filterResultLabel = new JLabel("");
             this.filterResultLabel.setBounds(x + Constants.MARGIN_FROM_LEFT + 25, y + Constants.LABEL_HEIGHT * 12, Constants.LABEL_WIDTH * 5, Constants.LABEL_HEIGHT);
-            this.filterResultLabel.setFont(new Font("", Font.ITALIC, 15));
+            this.filterResultLabel.setFont(new Font("", Font.ITALIC, 16));
             this.filterResultLabel.setVisible(true);
             this.add(this.filterResultLabel);
 
-            this.classStatisticsLabel = new JLabel("");
-            this.classStatisticsLabel.setBounds(x+Constants.MARGIN_FROM_LEFT + 25, y + Constants.LABEL_HEIGHT * 15, Constants.LABEL_WIDTH * 5, Constants.LABEL_HEIGHT);
-            this.classStatisticsLabel.setFont(new Font("", Font.ITALIC, 20));
-            this.classStatisticsLabel.setVisible(true);
-            this.add(this.classStatisticsLabel);
 
             this.statisticResultButton = new JButton("Create Statistics File");
             this.statisticResultButton.setBounds(x + Constants.MARGIN_FROM_LEFT + 90, y + Constants.LABEL_HEIGHT * 13, Constants.LABEL_WIDTH * 2, Constants.LABEL_HEIGHT);
@@ -185,24 +174,14 @@ public class ManageScreen extends JPanel {
             this.sortedStatisticsBox.setBounds(x + Constants.MARGIN_FROM_LEFT + 400, y + Constants.LABEL_HEIGHT * 13, Constants.COMBO_BOX_WIDTH, Constants.COMBO_BOX_HEIGHT);
             this.add(this.sortedStatisticsBox);
 
-            this.statisticsLabel1 = new JLabel("");
-            this.statisticsLabel1.setBounds(x + Constants.MARGIN_FROM_LEFT, y + Constants.LABEL_HEIGHT * 14, Constants.COMBO_BOX_WIDTH, Constants.COMBO_BOX_HEIGHT);
-            this.add(this.statisticsLabel1);
-            this.statisticsLabel2 = new JLabel("");
-            this.statisticsLabel2.setBounds(x + Constants.MARGIN_FROM_LEFT, y + Constants.LABEL_HEIGHT * 15, Constants.COMBO_BOX_WIDTH, Constants.COMBO_BOX_HEIGHT);
-            this.add(this.statisticsLabel2);
-            this.statisticsLabel3 = new JLabel("");
-            this.statisticsLabel3.setBounds(x + Constants.MARGIN_FROM_LEFT, y + Constants.LABEL_HEIGHT * 16, Constants.COMBO_BOX_WIDTH, Constants.COMBO_BOX_HEIGHT);
-            this.add(this.statisticsLabel3);
-            this.statisticsLabel4 = new JLabel("");
-            this.statisticsLabel4.setBounds(x + Constants.MARGIN_FROM_LEFT, y + Constants.LABEL_HEIGHT * 17, Constants.COMBO_BOX_WIDTH, Constants.COMBO_BOX_HEIGHT);
-            this.add(this.statisticsLabel4);
-            this.statisticsLabel5 = new JLabel("");
-            this.statisticsLabel5.setBounds(x + Constants.MARGIN_FROM_LEFT, y + Constants.LABEL_HEIGHT * 18, Constants.COMBO_BOX_WIDTH, Constants.COMBO_BOX_HEIGHT);
-            this.add(this.statisticsLabel5);
-            this.statisticsLabel6 = new JLabel("");
-            this.statisticsLabel6.setBounds(x + Constants.MARGIN_FROM_LEFT, y + Constants.LABEL_HEIGHT * 19, Constants.COMBO_BOX_WIDTH, Constants.COMBO_BOX_HEIGHT);
-            this.add(this.statisticsLabel6);
+
+            this.groupStatistics = new JTextArea();
+            this.groupStatistics.setBounds(x + Constants.MARGIN_FROM_LEFT + 400, y + Constants.LABEL_HEIGHT * 15, Constants.COMBO_BOX_WIDTH * 5, Constants.COMBO_BOX_HEIGHT * 6);
+            this.groupStatistics.setBackground(this.getBackground());
+            this.groupStatistics.setFont(new Font("", Font.ITALIC, 17));
+            this.groupStatistics.setVisible(true);
+            this.add(this.groupStatistics);
+
 
             this.classStatistics = new HashMap<>();
             this.ageStatistics = new HashMap<>();
@@ -212,6 +191,7 @@ public class ManageScreen extends JPanel {
             this.pierEmbarkStatistics = new HashMap<>();
 
             readTitanicPassengerData(file);
+            initialGroupStatistics();
 
             this.filterButton.addActionListener((e) -> filterPassengers());
 
@@ -397,7 +377,7 @@ public class ManageScreen extends JPanel {
                     .toList();
 
             //Log file creation
-            File savedSearch = new File(SAVED_SEARCH_FILE_PATH + this.fileCount + ".csv");
+            File savedSearch = new File(Constants.SAVED_SEARCH_FILE_PATH + this.fileCount + ".csv");
             fileCount++;
             System.out.println("created log file");
             FileWriter fileWriter = new FileWriter(savedSearch);
@@ -432,8 +412,6 @@ public class ManageScreen extends JPanel {
             double firstClassSurvivedAvg = (double) firstClassSurvived /firstClass.size() ;
             statisticsData.add("1st class Avg: " + String.format("%.2f", firstClassSurvivedAvg*100) +"%");
 
-            this.classStatistics.put("1st Class", ((float) firstClass.size()/this.passengers.size()));
-
             List<Passenger> secondClass = this.passengers
                     .stream()
                     .filter(passenger -> passenger.getPclass() == 2)
@@ -442,8 +420,6 @@ public class ManageScreen extends JPanel {
             double secondClassSurvivedAvg = (double) secondClassSurvived/secondClass.size();
             statisticsData.add("2nd class Avg: " + String.format("%.2f", secondClassSurvivedAvg*100) +"%");
 
-            this.classStatistics.put("2nd Class", ((float)secondClass.size()/this.passengers.size()));
-
             List<Passenger> thirdClass = this.passengers
                     .stream()
                     .filter(passenger -> passenger.getPclass() == 3)
@@ -451,8 +427,6 @@ public class ManageScreen extends JPanel {
             int thirdClassSurvived = calculateSurvivedPassengers(thirdClass);
             double thirdClassSurvivedAvg = (double) thirdClassSurvived/thirdClass.size();
             statisticsData.add("3rd class Avg: " + String.format("%.2f", thirdClassSurvivedAvg*100) +"%");
-
-            this.classStatistics.put("3rd Class", ((float) thirdClass.size() / this.passengers.size()) * 100);
 
             statisticsData.add("--------------------------------");
             statisticsData.add("Percentage survived by gender");
@@ -464,8 +438,6 @@ public class ManageScreen extends JPanel {
             double malePassengersSurvivedAvg = (double) malePassengersSurvived/malePassengers.size();
             statisticsData.add("male Avg: " + String.format("%.2f", malePassengersSurvivedAvg*100) +"%");
 
-            this.genderStatistics.put("Male" , ((float) malePassengers.size()/this.passengers.size())*100);
-
             List<Passenger> femalePassengers = this.passengers
                     .stream()
                     .filter(passenger -> passenger.getSex().equals("female"))
@@ -473,8 +445,6 @@ public class ManageScreen extends JPanel {
             int femalePassengersSurvived = calculateSurvivedPassengers(femalePassengers);
             double femalePassengersSurvivedAvg = (double) femalePassengersSurvived/femalePassengers.size();
             statisticsData.add("female Avg: " + String.format("%.2f", femalePassengersSurvivedAvg*100) +"%");
-
-            this.genderStatistics.put("Female" , ((float) femalePassengers.size()/this.passengers.size())*100);
 
             statisticsData.add("--------------------------------");
             statisticsData.add("Percentage survived by age");
@@ -487,42 +457,30 @@ public class ManageScreen extends JPanel {
             double ageOto10SurvivedAvg = (double) ageOto10Survived / age0to10Passengers.size();
             statisticsData.add("Age (0-10) Avg: " + String.format("%.2f", ageOto10SurvivedAvg*100) +"%");
 
-            this.ageStatistics.put("0-10", ((float) age0to10Passengers.size()/this.passengers.size())*100);
-
             int age11to20Survived = getSurvivedCountInAgeRange(11, 20, allSurvivedPassengers);
             List<Passenger> age11to20Passengers = getPassengersByAgeRange(11, 20);
             double age11to20SurvivedAvg = (double) age11to20Survived / age11to20Passengers.size();
             statisticsData.add("Age (11-20) Avg: " + String.format("%.2f", age11to20SurvivedAvg*100) +"%");
-
-            this.ageStatistics.put("11-20", ((float) age11to20Passengers.size()/this.passengers.size())*100);
 
             int age21to30Survived = getSurvivedCountInAgeRange(21, 30, allSurvivedPassengers);
             List<Passenger> age21to30Passengers = getPassengersByAgeRange(21, 30);
             double age21to30SurvivedAvg = (double) age21to30Survived / age21to30Passengers.size();
             statisticsData.add("Age (21-30) Avg: " + String.format("%.2f", age21to30SurvivedAvg*100) +"%");
 
-            this.ageStatistics.put("21-30" , ((float) age21to30Passengers.size()/this.passengers.size())*100);
-
             int age31to40Survived = getSurvivedCountInAgeRange(31, 40, allSurvivedPassengers);
             List<Passenger> age31to40Passengers = getPassengersByAgeRange(31, 40);
             double age31to40SurvivedAvg = (double) age31to40Survived / age31to40Passengers.size();
             statisticsData.add("Age (31-40) Avg: " + String.format("%.2f", age31to40SurvivedAvg*100) +"%");
-
-            this.ageStatistics.put("31-40", ((float) age31to40Passengers.size()/this.passengers.size())*100);
 
             int age41to50Survived = getSurvivedCountInAgeRange(41, 50, allSurvivedPassengers);
             List<Passenger> age41to50Passengers = getPassengersByAgeRange(41, 50);
             double age41to50SurvivedAvg = (double) age41to50Survived / age41to50Passengers.size();
             statisticsData.add("Age (41-50) Avg: " + String.format("%.2f", age41to50SurvivedAvg*100) +"%");
 
-            this.ageStatistics.put("41-50", ((float) age41to50Passengers.size()/this.passengers.size())*100);
-
             int age50PlusSurvived = getSurvivedCountInAgeRange(51, 120, allSurvivedPassengers);
             List<Passenger> age51to120Passengers = getPassengersByAgeRange(51, 120);
             double age50PlusSurvivedAvg = (double) age50PlusSurvived / age51to120Passengers.size();
             statisticsData.add("Age 50+ Avg: " + String.format("%.2f", age50PlusSurvivedAvg*100) +"%");
-
-            this.ageStatistics.put("50+", ((float) age50PlusSurvived/this.passengers.size())*100);
 
             statisticsData.add("--------------------------------");
             statisticsData.add("Percentage survived with family or without");
@@ -534,8 +492,6 @@ public class ManageScreen extends JPanel {
             double hasFamilyPassengersSurvivedAvg = (double) hasFamilyPassengersSurvived / hasFamilyPassengers.size();
             statisticsData.add("Has family Avg: " + String.format("%.2f", hasFamilyPassengersSurvivedAvg*100) +"%");
 
-            this.hasFamilyStatistics.put("Has family", ((float) hasFamilyPassengers.size()/this.passengers.size())*100);
-
             List<Passenger> hasNoFamilyPassengers = this.passengers
                     .stream()
                     .filter(passenger -> passenger.getSibSp() + passenger.getParch() == 0)
@@ -544,8 +500,6 @@ public class ManageScreen extends JPanel {
             double hasNoFamilyPassengersSurvivedAvg = (double) hasNoFamilyPassengersSurvived / hasNoFamilyPassengers.size();
             statisticsData.add("Has no family Avg: " + String.format("%.2f", hasNoFamilyPassengersSurvivedAvg*100) +"%");
 
-            this.hasFamilyStatistics.put("No family", ((float) hasNoFamilyPassengers.size()/this.passengers.size())*100);
-
             statisticsData.add("--------------------------------");
             statisticsData.add("Percentage survived by ticket cost");
             int fare0to10Survived = getSurvivedInTicketRange(0, 10, allSurvivedPassengers);
@@ -553,21 +507,15 @@ public class ManageScreen extends JPanel {
             double fare0to10SurvivedAvg = (double) fare0to10Survived / fare0to10Passengers.size();
             statisticsData.add("Fare (0-10) Avg: " + String.format("%.2f", fare0to10SurvivedAvg*100) +"%");
 
-            this.ticketCostStatistics.put("0-10", ((float) fare0to10Passengers.size()/this.passengers.size())*100);
-
             int fare11to30Survived = getSurvivedInTicketRange(11, 30, allSurvivedPassengers);
             List<Passenger> fare11to30Passengers = getPassengersByFareRange(11, 30);
             double fare11to30SurvivedAvg = (double) fare11to30Survived / fare11to30Passengers.size();
             statisticsData.add("Fare (11-30) Avg: " + String.format("%.2f", fare11to30SurvivedAvg*100) +"%");
 
-            this.ticketCostStatistics.put("11-30", ((float) fare11to30Passengers.size()/this.passengers.size())*100);
-
             int fare30PlusSurvived = getSurvivedInTicketRange(31, 1000000, allSurvivedPassengers);
             List<Passenger> fare30AndAbovePassengers = getPassengersByFareRange(30, 1000000);
             double fare30PlusSurvivedAvg = (double) fare30PlusSurvived / fare30AndAbovePassengers.size();
             statisticsData.add("Fare 30+ Avg: " + String.format("%.2f", fare30PlusSurvivedAvg*100) +"%");
-
-            this.ticketCostStatistics.put("30+", ((float) fare30AndAbovePassengers.size()/this.passengers.size())*100);
 
             statisticsData.add("--------------------------------");
             statisticsData.add("Percentage survived by embarked pier");
@@ -576,25 +524,19 @@ public class ManageScreen extends JPanel {
             double embarkedCherbourgSurvivedAvg = (double) embarkedCherbourgSurvived / embarkedFromCherbourgPassengers.size();
             statisticsData.add("Embarked Cherbourg Avg: " + String.format("%.2f", embarkedCherbourgSurvivedAvg*100) +"%");
 
-            this.pierEmbarkStatistics.put("C", ((float) embarkedFromCherbourgPassengers.size()/this.passengers.size())*100);
-
             int embarkedQueenstownSurvived = getSurvivedByPier('Q', allSurvivedPassengers);
             List<Passenger> embarkedFromQueenstownPassengers = getPassengersByEmbarked('Q');
             double embarkedQueenstownSurvivedAvg = (double) embarkedQueenstownSurvived / embarkedFromQueenstownPassengers.size();
             statisticsData.add("Embarked Queenstown Avg: " + String.format("%.2f", embarkedQueenstownSurvivedAvg*100) +"%");
-
-            this.pierEmbarkStatistics.put("Q", ((float) embarkedFromQueenstownPassengers.size()/this.passengers.size())*100);
 
             int embarkedSouthamptonSurvived = getSurvivedByPier('S', allSurvivedPassengers);
             List<Passenger> embarkedFromSouthamptonPassengers = getPassengersByEmbarked('S');
             double embarkedSouthamptonSurvivedAvg = (double) embarkedSouthamptonSurvived / embarkedFromSouthamptonPassengers.size();
             statisticsData.add("Embarked Southampton Avg: " + String.format("%.2f", embarkedSouthamptonSurvivedAvg*100) +"%");
 
-            this.pierEmbarkStatistics.put("S", ((float) embarkedFromSouthamptonPassengers.size()/this.passengers.size())*100);
-
 
             //Statistics file creation
-            File savedStatistics = new File(SAVED_STATISTICS_FILE_PATH);
+            File savedStatistics = new File(Constants.SAVED_STATISTICS_FILE_PATH);
             System.out.println("created statistics file");
             FileWriter fileWriter = new FileWriter(savedStatistics);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
@@ -614,27 +556,126 @@ public class ManageScreen extends JPanel {
         }
     }
 
+    public void initialGroupStatistics(){
+        List<Passenger> firstClass = this.passengers
+                .stream()
+                .filter(passenger -> passenger.getPclass() == 1)
+                .toList();
+        this.classStatistics.put("1st Class", ((float) firstClass.size()/this.passengers.size())*100);
+        List<Passenger> secondClass = this.passengers
+                .stream()
+                .filter(passenger -> passenger.getPclass() == 2)
+                .toList();
+        this.classStatistics.put("2nd Class", ((float)secondClass.size()/this.passengers.size())*100);
+        List<Passenger> thirdClass = this.passengers
+                .stream()
+                .filter(passenger -> passenger.getPclass() == 3)
+                .toList();
+        this.classStatistics.put("3rd Class", ((float) thirdClass.size() / this.passengers.size())*100);
+        this.classStatistics = sortMapByValue(this.classStatistics);
+
+
+        List<Passenger> malePassengers = this.passengers
+                .stream()
+                .filter(passenger -> passenger.getSex().equals("male"))
+                .toList();
+        this.genderStatistics.put("Male" , ((float) malePassengers.size()/this.passengers.size())*100);
+        List<Passenger> femalePassengers = this.passengers
+                .stream()
+                .filter(passenger -> passenger.getSex().equals("female"))
+                .toList();
+        this.genderStatistics.put("Female" , ((float) femalePassengers.size()/this.passengers.size())*100);
+        this.genderStatistics = sortMapByValue(this.genderStatistics);
+
+
+        List<Passenger> age0to10Passengers = getPassengersByAgeRange(0, 10);
+        this.ageStatistics.put("0-10", ((float) age0to10Passengers.size()/this.passengers.size())*100);
+        List<Passenger> age11to20Passengers = getPassengersByAgeRange(11, 20);
+        this.ageStatistics.put("11-20", ((float) age11to20Passengers.size()/this.passengers.size())*100);
+        List<Passenger> age21to30Passengers = getPassengersByAgeRange(21, 30);
+        this.ageStatistics.put("21-30" , ((float) age21to30Passengers.size()/this.passengers.size())*100);
+        List<Passenger> age31to40Passengers = getPassengersByAgeRange(31, 40);
+        this.ageStatistics.put("31-40", ((float) age31to40Passengers.size()/this.passengers.size())*100);
+        List<Passenger> age41to50Passengers = getPassengersByAgeRange(41, 50);
+        this.ageStatistics.put("41-50", ((float) age41to50Passengers.size()/this.passengers.size())*100);
+        List<Passenger> age51to120Passengers = getPassengersByAgeRange(51, 120);
+        this.ageStatistics.put("50+", ((float) age51to120Passengers.size()/this.passengers.size())*100);
+        this.ageStatistics = sortMapByValue(this.ageStatistics);
+
+
+        List<Passenger> hasFamilyPassengers = this.passengers
+                .stream()
+                .filter(passenger -> passenger.getSibSp() + passenger.getParch() >= 1)
+                .toList();
+        this.hasFamilyStatistics.put("Has family", ((float) hasFamilyPassengers.size()/this.passengers.size())*100);
+        List<Passenger> hasNoFamilyPassengers = this.passengers
+                .stream()
+                .filter(passenger -> passenger.getSibSp() + passenger.getParch() == 0)
+                .toList();
+        this.hasFamilyStatistics.put("No family", ((float) hasNoFamilyPassengers.size()/this.passengers.size())*100);
+        this.hasFamilyStatistics = sortMapByValue(this.hasFamilyStatistics);
+
+
+        List<Passenger> fare0to10Passengers = getPassengersByFareRange(0, 10);
+        this.ticketCostStatistics.put("0-10", ((float) fare0to10Passengers.size()/this.passengers.size())*100);
+        List<Passenger> fare11to30Passengers = getPassengersByFareRange(11, 30);
+        this.ticketCostStatistics.put("11-30", ((float) fare11to30Passengers.size()/this.passengers.size())*100);
+        List<Passenger> fare30AndAbovePassengers = getPassengersByFareRange(30, 1000000);
+        this.ticketCostStatistics.put("30+", ((float) fare30AndAbovePassengers.size()/this.passengers.size())*100);
+        this.ticketCostStatistics = sortMapByValue(this.ticketCostStatistics);
+
+
+        List<Passenger> embarkedFromCherbourgPassengers = getPassengersByEmbarked('C');
+        this.pierEmbarkStatistics.put("C", ((float) embarkedFromCherbourgPassengers.size()/this.passengers.size())*100);
+        List<Passenger> embarkedFromQueenstownPassengers = getPassengersByEmbarked('Q');
+        this.pierEmbarkStatistics.put("Q", ((float) embarkedFromQueenstownPassengers.size()/this.passengers.size())*100);
+        List<Passenger> embarkedFromSouthamptonPassengers = getPassengersByEmbarked('S');
+        this.pierEmbarkStatistics.put("S", ((float) embarkedFromSouthamptonPassengers.size()/this.passengers.size())*100);
+        this.pierEmbarkStatistics = sortMapByValue(this.pierEmbarkStatistics);
+    }
+
+    public Map<String, Float> sortMapByValue(Map<String, Float> toSort){
+        toSort = toSort
+                .entrySet()
+                .stream()
+                .sorted(Map.Entry.<String, Float>comparingByValue(Comparator.reverseOrder()))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
+        return toSort;
+    }
+
+    public void showGroupStatistic(Map<String, Float> toShow, String title){
+        String result = title + "\n";
+        for (Map.Entry<String,Float> entry : toShow.entrySet()) {
+            result += entry.getKey() + " = " + String.format("%.2f", entry.getValue()) + "\n";
+        }
+        this.groupStatistics.setText(result);
+    }
+
     public void dataGrouping(){
         // do a switch case
         switch (this.sortedStatisticsBox.getSelectedItem().toString()) {
             case "Class" ->{
-                System.out.println(this.classStatistics);
+                showGroupStatistic(this.classStatistics, "Group by Class");
             }
             case "Gender" -> {
-                System.out.println(this.genderStatistics);
+                showGroupStatistic(this.genderStatistics, "Group by Gender");
             }
             case "Age" -> {
-                System.out.println(this.ageStatistics);
+                showGroupStatistic(this.ageStatistics, "Group by Age");
             }
             case "HasFamily" -> {
-                System.out.println(this.hasFamilyStatistics);
+                showGroupStatistic(this.hasFamilyStatistics, "Group by HasFamily");
             }
             case "Ticket Cost" -> {
-                System.out.println(this.ticketCostStatistics);
+                showGroupStatistic(this.ticketCostStatistics, "Group by Ticket Cost");
             }
             case "Pier Embarked" -> {
-                System.out.println(this.pierEmbarkStatistics);
-            }
+                showGroupStatistic(this.pierEmbarkStatistics, "Group by Pier Embarked");            }
         }
 
     }
