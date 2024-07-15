@@ -678,7 +678,7 @@ public class ManageScreen extends JPanel {
                 showGroupStatistic(this.pierEmbarkStatistics, "Group by Pier Embarked");
             }
             case "None" -> {
-                this.groupStatistics.setText(null);
+                this.groupStatistics.setText("");
             }
         }
 
